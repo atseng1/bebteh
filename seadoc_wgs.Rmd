@@ -32,7 +32,7 @@ setwd("/Users/ashleytseng/OneDrive - UW/UW PhD/BEBTEH/SeaDoc AMR Phylogenetics")
 
 ```{r my_workflow}
 # Read in metadata
-metadata = read.csv("seadoc_metadata.csv")
+metadata = read.csv("/Users/ashleytseng/OneDrive - UW/UW PhD/BEBTEH/SeaDoc AMR Phylogenetics/seadoc_metadata.csv")
 class(metadata)
 
 # Read in .newick file
@@ -83,20 +83,24 @@ gzoom(tree, grep("SRR10948144"), tree$tip.label)
 # ST10 phylogenetic tree
 st10_phylotree = ggtree(st10_tree, size = 0.5)
 st10_phylotree %<+% st10_data + 
-  geom_tiplab(aes(label = Local_Specimen_Number), size = 3) + 
-  geom_tippoint(aes(color = Source)) + 
+  geom_tiplab(aes(label = Local_Specimen_Number), size = 5) + 
+  geom_tippoint(aes(color = Source, size = 2)) + 
   geom_treescale() +
-  theme(legend.position = "bottom") + 
+  theme(legend.position = "bottom", 
+        legend.title = element_text(size = 18),
+        legend.text = element_text(size = 15)) +
   ggtitle("ST10 Phylogenetic Tree") 
   
 
 # ST131 phylogenetic tree
 st131_phylotree = ggtree(st131_tree, size = 0.5) 
 st131_phylotree %<+% st131_data + 
-  geom_tiplab(aes(label = Local_Specimen_Number), size = 3) + 
-  geom_tippoint(aes(color = Source)) +
+  geom_tiplab(aes(label = Local_Specimen_Number), size = 5) + 
+  geom_tippoint(aes(color = Source, size = 2)) +
   geom_treescale() +
-  theme(legend.position = "bottom") + 
+  theme(legend.position = "bottom", 
+        legend.title = element_text(size = 18),
+        legend.text = element_text(size = 15)) +
   ggtitle("ST131 Phylogenetic Tree") 
 
 
