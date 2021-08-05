@@ -1,7 +1,7 @@
 ---
 title: "SeaDoc Phylogenetic Trees"
 author: "Ashley Tseng"
-date: "July 16, 2021"
+date: "August 5, 2021"
 output: 
   html_document:
     toc: true # table of content
@@ -25,6 +25,7 @@ library(igraph)
 library(purrr)
 library(tibble)
 library(Biostrings)
+library(treeio)
 
 setwd("/Users/ashleytseng/OneDrive - UW/UW PhD/BEBTEH/SeaDoc AMR Phylogenetics")
 ```
@@ -32,53 +33,68 @@ setwd("/Users/ashleytseng/OneDrive - UW/UW PhD/BEBTEH/SeaDoc AMR Phylogenetics")
 
 ```{r my_workflow}
 # Read in metadata
-metadata = read.csv("/Users/ashleytseng/OneDrive - UW/UW PhD/BEBTEH/SeaDoc AMR Phylogenetics/Metadata/seadoc_metadata.csv")
+metadata = read.csv("/Users/ashleytseng/OneDrive - UW/UW PhD/BEBTEH/SeaDoc AMR Phylogenetics/Metadata/Final/seadoc_metadata.csv") %>% 
+  janitor::clean_names()
 class(metadata)
 
 # Read in .newick file
 setwd("/Users/ashleytseng/Desktop/BEBTEH")
-full_tree = read.newick("seadoc_snps.newick")
-st10_tree = read.newick("seadoc_st10.newick")
-st131_tree = read.newick("seadoc_st131.newick")
+#full_tree = read.newick("seadoc_snps.newick")
+full_tree = read.tree("seadoc_snps.newick")
+
+#st10_tree = read.newick("seadoc_st10.newick")
+#st131_tree = read.newick("seadoc_st131.newick")
 # View tree (unrooted)
 ggtree(full_tree)
-ggtree(st10_tree)
-ggtree(st131_tree)
+#ggtree(st10_tree)
+#ggtree(st131_tree)
 
 # Root tree
 full_tree = root(full_tree, "Reference") 
 is.rooted(full_tree)
-st10_tree = root(st10_tree, "Reference") 
-is.rooted(st10_tree)
-st131_tree = root(st131_tree, "Reference") 
-is.rooted(st131_tree)
+#st10_tree = root(st10_tree, "Reference") 
+#is.rooted(st10_tree)
+#st131_tree = root(st131_tree, "Reference") 
+#is.rooted(st131_tree)
 # View tree (rooted)
 ggtree(full_tree)
 #ggtree(tree, branch.length='none')
-ggtree(st10_tree)
-ggtree(st131_tree)
+#ggtree(st10_tree)
+#ggtree(st131_tree)
 
 
 # Attach metadata for full tree
-full_data = tibble(SRR_id = full_tree$tip.label)
-full_data = merge(full_data, metadata, by = "SRR_id", all.x = TRUE)
+full_data = tibble(srr_id = full_tree$tip.label)
+full_data = merge(full_data, metadata, by = "srr_id", all.x = TRUE)
 # Attach metadata for ST10 tree
-st10_data = tibble(SRR_id = st10_tree$tip.label)
-st10_data = merge(st10_data, metadata, by = "SRR_id", all.x = TRUE)
+#st10_data = tibble(SRR_id = st10_tree$tip.label)
+#st10_data = merge(st10_data, metadata, by = "SRR_id", all.x = TRUE)
 # Attach metadata for ST131 tree
-st131_data = tibble(SRR_id = st131_tree$tip.label)
-st131_data = merge(st131_data, metadata, by = "SRR_id", all.x = TRUE)
-
+#st131_data = tibble(SRR_id = st131_tree$tip.label)
+#st131_data = merge(st131_data, metadata, by = "SRR_id", all.x = TRUE)
 
 # Full phylogenetic tree
 full_phylotree = ggtree(full_tree)
 #p = ggtree(tree, branch.length='none')
 # With tip labels and colored by ST type 
-full_phylotree %<+% full_data + geom_tiplab() + geom_tippoint(aes(color = MLST_ST)) #too much
+full_phylotree %<+% full_data + geom_tiplab() + geom_tippoint(aes(color = specimen_source)) #too much
 # Without tip labels
-full_phylotree %<+% full_data + geom_tippoint(aes(color = MLST_ST)) #use this
-full_phylotree + geom_text(aes(label=label), size=3, color="purple", hjust=-0.3)
-gzoom(tree, grep("SRR10948144"), tree$tip.label)
+full_phylotree %<+% full_data + geom_tippoint(aes(color = specimen_source)) #use this
+#full_phylotree + geom_text(aes(label=label), size=3, color="purple", hjust=-0.3)
+#gzoom(full_phylotree, focus, subtree = TRUE, widths = c(0.3, 0.7)) #gzoom function is defunct
+
+# Sub-trees
+sub_tree = tree_subset(full_tree, node = "SRR11059188", levels_back = 6) #create subtree based on SRR11059188 river otter sample (GRNRA2B)
+ggtree(sub_tree) %<+% full_data + 
+  geom_tiplab(aes(label = wgs_mlst)) + 
+  geom_tippoint(aes(color = specimen_source)) +
+  geom_treescale() +
+  theme(legend.position = "bottom", 
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10)) +
+  ggtitle("Phylogenetic Tree Rooted at SRR11059188") 
+
+
 
 # ST10 phylogenetic tree
 st10_phylotree = ggtree(st10_tree, size = 0.5)
