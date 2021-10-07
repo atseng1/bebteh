@@ -1,11 +1,8 @@
 ---
 title: "SeaDoc Phylogenetic Trees"
 author: "Ashley Tseng"
-date: "March 5, 2021"
-output: 
-  html_document:
-    toc: true # table of content
-    toc_depth: 6  # upto three depths of headings
+date: "October 7, 2021"
+output: "html_document"
 ---
 
 ```{r setup, include=FALSE}
@@ -32,7 +29,7 @@ setwd("/Users/ashleytseng/OneDrive - UW/UW PhD/BEBTEH/SeaDoc AMR Phylogenetics")
 
 ```{r my_workflow}
 # Read in metadata
-metadata = read.csv("/Users/ashleytseng/OneDrive - UW/UW PhD/BEBTEH/SeaDoc AMR Phylogenetics/seadoc_metadata.csv")
+metadata = read.csv("/Users/ashleytseng/OneDrive - UW/UW PhD/BEBTEH/SeaDoc AMR Phylogenetics/Metadata/Final/seadoc_metadata.csv")
 class(metadata)
 
 # Read in .newick file
