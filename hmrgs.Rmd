@@ -1,0 +1,194 @@
+---
+title: "HMRG-ARG Chi-Squared Tests"
+author: "Ashley Tseng"
+date: "2022-08-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(readxl)
+
+setwd("/Users/ashleytseng/OneDrive - UW/UW PhD/BEBTEH/SeaDoc AMR Phylogenetics/seadoc")
+```
+
+
+## Read datasets in
+```{r read_data}
+hmrgs = read_xlsx("seadoc_hmrgs_args_metadata.xlsx", sheet = "HMRGs", range = "A2:W27")
+args = read_xlsx("seadoc_hmrgs_args_metadata.xlsx", sheet = "ARGs", range = "A1:AK26")
+
+## Merge datasets
+full_dataset = full_join(hmrgs, args, by = c("no.", "isolate_project_id", "isolate_source", "source_location"))
+
+# Create binary variables for HMRGs
+full_dataset = full_dataset %>% 
+  mutate(arsB_bi = ifelse(arsB == 0, 0, 1),
+         arsD_bi = ifelse(arsD == 0, 0, 1),
+         arsR_bi = ifelse(arsR == 0, 0, 1),
+         pcoABCD_bi = ifelse(pcoABCD == 0, 0, 1))
+```
+
+
+## Chi-squared tests for... 
+## 4 HMRGs: arsB, arsD, arsR, pcoABCD
+## 32 ARGs: `aac(2')-Iia`,	aac(3)-Iid,	aac(3)-IV,	aac(3)-Iva,	aac(3)-Via,	aadA1,	aadA2,	aadA5,	aph(3')-Ia,	aph(3")-Ib,	aph(4)-Ia,	aph(6)-Id,	blaCMY-2,	blaCTX-M-15, 	blaSHV-12,	blaTEM-1B,	blaTEM-1C,	catA1,	cmlA1,	dfrA12,	dfrA17,	dfrA5,	floR,	lnu(F),	mph(A),	qnrB82,	qnrS1,	sul1,	sul2,	sul3,	tet(A),	tet(B)
+```{r chisq_tests}
+# *** significant at p<0.05 level
+# ** significant at p<0.10 level
+
+# arsB
+table(full_dataset$arsB_bi, full_dataset$`aac(2')-Iia`)
+chisq.test(full_dataset$arsB_bi, full_dataset$`aac(2')-Iia`, correct = TRUE) # set `correct=FALSE` to turn off Yates’ continuity correction. # p-value = 0.2327
+chisq.test(full_dataset$arsB_bi, full_dataset$`aac(3)-Iid`, correct = TRUE) # p-value = 0.2327
+chisq.test(full_dataset$arsB_bi, full_dataset$`aac(3)-IV`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$`aac(3)-Iva`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$`aac(3)-Via`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$aadA1, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$aadA2, correct = TRUE) # p-value = 0.5553
+chisq.test(full_dataset$arsB_bi, full_dataset$aadA5, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$`aph(3')-Ia`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$`aph(3")-Ib`, correct = TRUE) # p-value = 0.5439
+chisq.test(full_dataset$arsB_bi, full_dataset$`aph(4)-Ia`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$`aph(6)-Id`, correct = TRUE) # p-value = 0.3093
+chisq.test(full_dataset$arsB_bi, full_dataset$`blaCMY-2`, correct = TRUE) # p-value = 1
+table(full_dataset$arsB_bi, full_dataset$`blaCTX-M-15`)
+chisq.test(full_dataset$arsB_bi, full_dataset$`blaCTX-M-15`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$`blaSHV-12`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$`blaTEM-1B`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$`blaTEM-1C`, correct = TRUE) # p-value = 0.2327
+chisq.test(full_dataset$arsB_bi, full_dataset$catA1, correct = TRUE) # p-value = 0.8777
+chisq.test(full_dataset$arsB_bi, full_dataset$cmlA1, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$dfrA12, correct = TRUE) # p-value = 0.9732
+chisq.test(full_dataset$arsB_bi, full_dataset$dfrA17, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$dfrA5, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$floR, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$`lnu(F)`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$`mph(A)`, correct = TRUE) # p-value = 0.9732
+chisq.test(full_dataset$arsB_bi, full_dataset$qnrB82, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$qnrS1, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$sul1, correct = TRUE) # p-value = 0.9732
+chisq.test(full_dataset$arsB_bi, full_dataset$sul2, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$sul3, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsB_bi, full_dataset$`tet(A)`, correct = TRUE) # p-value = 0.6412
+chisq.test(full_dataset$arsB_bi, full_dataset$`tet(B)`, correct = TRUE) # p-value = 0.3093
+
+
+# arsD (note: none of the p-values are updated except for ***)
+table(full_dataset$arsD_bi, full_dataset$`aac(2')-Iia`)
+chisq.test(full_dataset$arsD_bi, full_dataset$`aac(2')-Iia`, correct = TRUE) # set `correct=FALSE` to turn off Yates’ continuity correction. # p-value = 0.2327
+chisq.test(full_dataset$arsD_bi, full_dataset$`aac(3)-Iid`, correct = TRUE) # p-value = 0.2327
+chisq.test(full_dataset$arsD_bi, full_dataset$`aac(3)-IV`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$`aac(3)-Iva`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$`aac(3)-Via`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$aadA1, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$aadA2, correct = TRUE) # p-value = 0.5553
+chisq.test(full_dataset$arsD_bi, full_dataset$aadA5, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$`aph(3')-Ia`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$`aph(3")-Ib`, correct = TRUE) # p-value = 0.5439
+chisq.test(full_dataset$arsD_bi, full_dataset$`aph(4)-Ia`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$`aph(6)-Id`, correct = TRUE) # p-value = 0.3093
+chisq.test(full_dataset$arsD_bi, full_dataset$`blaCMY-2`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$`blaCTX-M-15`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$`blaSHV-12`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$`blaTEM-1B`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$`blaTEM-1C`, correct = TRUE) # p-value = 0.2327
+chisq.test(full_dataset$arsD_bi, full_dataset$catA1, correct = TRUE) # p-value = 0.8777
+chisq.test(full_dataset$arsD_bi, full_dataset$cmlA1, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$dfrA12, correct = TRUE) # p-value = 0.9732
+chisq.test(full_dataset$arsD_bi, full_dataset$dfrA17, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$dfrA5, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$floR, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$`lnu(F)`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$`mph(A)`, correct = TRUE) # p-value = 0.9732
+table(full_dataset$arsD_bi, full_dataset$qnrB82)
+chisq.test(full_dataset$arsD_bi, full_dataset$qnrB82, correct = TRUE) # p-value = 0.01658***
+chisq.test(full_dataset$arsD_bi, full_dataset$qnrS1, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$sul1, correct = TRUE) # p-value = 0.9732
+chisq.test(full_dataset$arsD_bi, full_dataset$sul2, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$sul3, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsD_bi, full_dataset$`tet(A)`, correct = TRUE) # p-value = 0.6412
+chisq.test(full_dataset$arsR_bi, full_dataset$`tet(B)`, correct = TRUE) # p-value = 0.3093
+
+# arsR (note: none of the p-values are updated except for ***)
+table(full_dataset$arsR_bi, full_dataset$`aac(2')-Iia`)
+chisq.test(full_dataset$arsR_bi, full_dataset$`aac(2')-Iia`, correct = TRUE) # set `correct=FALSE` to turn off Yates’ continuity correction. # p-value = 0.2327
+chisq.test(full_dataset$arsR_bi, full_dataset$`aac(3)-Iid`, correct = TRUE) # p-value = 0.2327
+chisq.test(full_dataset$arsR_bi, full_dataset$`aac(3)-IV`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$`aac(3)-Iva`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$`aac(3)-Via`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$aadA1, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$aadA2, correct = TRUE) # p-value = 0.5553
+chisq.test(full_dataset$arsR_bi, full_dataset$aadA5, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$`aph(3')-Ia`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$`aph(3")-Ib`, correct = TRUE) # p-value = 0.5439
+chisq.test(full_dataset$arsR_bi, full_dataset$`aph(4)-Ia`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$`aph(6)-Id`, correct = TRUE) # p-value = 0.3093
+chisq.test(full_dataset$arsR_bi, full_dataset$`blaCMY-2`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$`blaCTX-M-15`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$`blaSHV-12`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$`blaTEM-1B`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$`blaTEM-1C`, correct = TRUE) # p-value = 0.2327
+chisq.test(full_dataset$arsR_bi, full_dataset$catA1, correct = TRUE) # p-value = 0.8777
+chisq.test(full_dataset$arsR_bi, full_dataset$cmlA1, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$dfrA12, correct = TRUE) # p-value = 0.9732
+chisq.test(full_dataset$arsR_bi, full_dataset$dfrA17, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$dfrA5, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$floR, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$`lnu(F)`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$`mph(A)`, correct = TRUE) # p-value = 0.9732
+table(full_dataset$arsR_bi, full_dataset$qnrB82)
+chisq.test(full_dataset$arsR_bi, full_dataset$qnrB82, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$qnrS1, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$sul1, correct = TRUE) # p-value = 0.9732
+chisq.test(full_dataset$arsR_bi, full_dataset$sul2, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$sul3, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$arsR_bi, full_dataset$`tet(A)`, correct = TRUE) # p-value = 0.6412
+chisq.test(full_dataset$arsR_bi, full_dataset$`tet(B)`, correct = TRUE) # p-value = 0.3093
+
+
+# pcoABCD
+table(full_dataset$pcoABCD_bi, full_dataset$`aac(2')-Iia`)
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`aac(2')-Iia`, correct = TRUE) # set `correct=FALSE` to turn off Yates’ continuity correction. # p-value = 1
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`aac(3)-Iid`, correct = TRUE) # p-value = 1
+table(full_dataset$pcoABCD_bi, full_dataset$`aac(3)-IV`)
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`aac(3)-IV`, correct = TRUE) # p-value = 0.07829**
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`aac(3)-Iva`, correct = TRUE) # p-value = 0.5344
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`aac(3)-Via`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$aadA1, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$aadA2, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$aadA5, correct = TRUE) # p-value = 0.7512
+table(full_dataset$pcoABCD_bi, full_dataset$`aph(3')-Ia`)
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`aph(3')-Ia`, correct = TRUE) # p-value = 0.07829**
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`aph(3")-Ib`, correct = TRUE) # p-value = 1
+table(full_dataset$pcoABCD_bi, full_dataset$`aph(4)-Ia`)
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`aph(4)-Ia`, correct = TRUE) # p-value = 0.07829**
+table(full_dataset$pcoABCD_bi, full_dataset$`aph(6)-Id`)
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`aph(6)-Id`, correct = TRUE) # p-value = 0.07931**
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`blaCMY-2`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`blaCTX-M-15`, correct = TRUE) # p-value = 0.7512
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`blaSHV-12`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`blaTEM-1B`, correct = TRUE) # p-value = 0.2451
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`blaTEM-1C`, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$catA1, correct = TRUE) # p-value = 0.4125
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$cmlA1, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$dfrA12, correct = TRUE) # p-value = 0.5568
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$dfrA17, correct = TRUE) # p-value = 0.7512
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$dfrA5, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$floR, correct = TRUE) # p-value = 0.5568
+table(full_dataset$pcoABCD_bi, full_dataset$`lnu(F)`)
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`lnu(F)`, correct = TRUE) # p-value = 0.07829**
+table(full_dataset$pcoABCD_bi, full_dataset$`mph(A)`)
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`mph(A)`, correct = TRUE) # p-value = 0.5568
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$qnrB82, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$qnrS1, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$sul1, correct = TRUE) # p-value = 0.5568
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$sul2, correct = TRUE) # p-value = 1
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$sul3, correct = TRUE) # p-value = 0.7512
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`tet(A)`, correct = TRUE) # p-value = 0.2184
+table(full_dataset$pcoABCD_bi, full_dataset$`tet(B)`)
+chisq.test(full_dataset$pcoABCD_bi, full_dataset$`tet(B)`, correct = TRUE) # p-value = 0.07931**
+```
+

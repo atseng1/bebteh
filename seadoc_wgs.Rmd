@@ -1,7 +1,7 @@
 ---
 title: "SeaDoc Phylogenetic Trees"
 author: "Ashley Tseng"
-date: "August 5, 2021"
+date: "January 7, 2022"
 output: 
   html_document:
     toc: true # table of content
@@ -12,19 +12,19 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+library(readxl)
 library(ggplot2)
-
-library(ape)
-library(seqinr)
-library(phangorn)
-library(phytools)
-library(ggplot2)
-library(ggmsa)
 library(ggtree)
-library(igraph)
-library(purrr)
-library(tibble)
-library(Biostrings)
+library(ape)
+
+#library(seqinr)
+#library(phangorn)
+#library(phytools)
+#library(ggmsa)
+#library(igraph)
+#library(purrr)
+#library(tibble)
+#library(Biostrings)
 library(treeio)
 
 setwd("/Users/ashleytseng/OneDrive - UW/UW PhD/BEBTEH/SeaDoc AMR Phylogenetics")
@@ -33,14 +33,13 @@ setwd("/Users/ashleytseng/OneDrive - UW/UW PhD/BEBTEH/SeaDoc AMR Phylogenetics")
 
 ```{r my_workflow}
 # Read in metadata
-metadata = read.csv("/Users/ashleytseng/OneDrive - UW/UW PhD/BEBTEH/SeaDoc AMR Phylogenetics/Metadata/Final/seadoc_metadata.csv") %>% 
+metadata = read_excel("/Users/ashleytseng/OneDrive - UW/UW PhD/BEBTEH/SeaDoc AMR Phylogenetics/Metadata/Final/Clean/seadoc_metadata_wgs only.xlsx", range = "B1:T342") %>% 
   janitor::clean_names()
 class(metadata)
 
 # Read in .newick file
-setwd("/Users/ashleytseng/Desktop/BEBTEH")
 #full_tree = read.newick("seadoc_snps.newick")
-full_tree = read.tree("seadoc_snps.newick")
+full_tree = read.tree("/Users/ashleytseng/Desktop/BEBTEH/01-06-2022/BEBTEH/seadoc_snps.newick")
 
 #st10_tree = read.newick("seadoc_st10.newick")
 #st131_tree = read.newick("seadoc_st131.newick")
@@ -65,7 +64,20 @@ ggtree(full_tree)
 
 # Attach metadata for full tree
 full_data = tibble(srr_id = full_tree$tip.label)
+
 full_data = merge(full_data, metadata, by = "srr_id", all.x = TRUE)
+
+# Add details for K-12 reference strain
+full_data = full_data %>% 
+  mutate(srr_id = case_when(srr_id == "Reference" ~ "SRR10971019",
+                            TRUE ~ srr_id))
+full_data = full_data %>% 
+  mutate(project_id = case_when(srr_id == "SRR10971019" ~ "K-12 Reference Strain",
+                                TRUE ~ project_id))
+full_data = full_data %>% 
+  mutate(specimen_source = case_when(srr_id == "SRR10971019" ~ "Human",
+                                     TRUE ~ specimen_source))
+
 # Attach metadata for ST10 tree
 #st10_data = tibble(SRR_id = st10_tree$tip.label)
 #st10_data = merge(st10_data, metadata, by = "SRR_id", all.x = TRUE)
@@ -77,14 +89,14 @@ full_data = merge(full_data, metadata, by = "srr_id", all.x = TRUE)
 full_phylotree = ggtree(full_tree)
 #p = ggtree(tree, branch.length='none')
 # With tip labels and colored by ST type 
-full_phylotree %<+% full_data + geom_tiplab() + geom_tippoint(aes(color = specimen_source)) #too much
+full_phylotree %<+% full_data + geom_tiplab(aes(label = project_id), size = 0.5) + geom_tippoint(aes(color = specimen_source)) #too much
 # Without tip labels
 full_phylotree %<+% full_data + geom_tippoint(aes(color = specimen_source)) #use this
 #full_phylotree + geom_text(aes(label=label), size=3, color="purple", hjust=-0.3)
 #gzoom(full_phylotree, focus, subtree = TRUE, widths = c(0.3, 0.7)) #gzoom function is defunct
 
 # Sub-trees
-sub_tree = tree_subset(full_tree, node = "SRR11059188", levels_back = 6) #create subtree based on SRR11059188 river otter sample (GRNRA2B)
+sub_tree = tree_subset(full_tree, node = "SRR12584072", levels_back = 6) #create subtree based on SRR12584072 seal fecal sample (AN0107)
 ggtree(sub_tree) %<+% full_data + 
   geom_tiplab(aes(label = wgs_mlst)) + 
   geom_tippoint(aes(color = specimen_source)) +
@@ -92,10 +104,64 @@ ggtree(sub_tree) %<+% full_data +
   theme(legend.position = "bottom", 
         legend.title = element_text(size = 10),
         legend.text = element_text(size = 10)) +
-  ggtitle("Phylogenetic Tree Rooted at SRR11059188") 
+  ggtitle("Phylogenetic Tree Subsetted to Evergreen Rotary Park Seal Fecal Sample (AN0107)")
+
+sub_tree = tree_subset(full_tree, node = "SRR12584072", levels_back = 4) #create subtree based on SRR12584072 seal fecal sample (AN0107)
+ggtree(sub_tree) %<+% full_data + 
+  geom_tiplab(aes(label = wgs_mlst)) + 
+  geom_tippoint(aes(color = specimen_source)) +
+  geom_treescale() +
+  theme(legend.position = "bottom", 
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10)) +
+  ggtitle("Phylogenetic Tree Subsetted to Evergreen Rotary Park Seal Fecal Sample (AN0107)")
 
 
 
+sub_tree = tree_subset(full_tree, node = "SRR12584072", levels_back = 6) #create subtree based on SRR12584072 seal fecal sample (AN0107)
+ggtree(sub_tree) %<+% full_data + 
+  geom_tiplab(aes(label = project_id)) + 
+  geom_tippoint(aes(color = specimen_source)) +
+  geom_treescale() +
+  theme(legend.position = "bottom", 
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10)) +
+  ggtitle("Phylogenetic Tree Subsetted to Evergreen Rotary Park Seal Fecal Sample (AN0107)")
+
+sub_tree = tree_subset(full_tree, node = "SRR12584072", levels_back = 6) #create subtree based on SRR12584072 seal fecal sample (AN0107)
+ggtree(sub_tree) %<+% full_data + 
+  geom_tiplab(aes(label = project_id)) + 
+  geom_tippoint(aes(color = specimen_source)) +
+  geom_treescale() +
+  theme(legend.position = "bottom", 
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10)) +
+  ggtitle("Phylogenetic Tree Subsetted to Evergreen Rotary Park Seal Fecal Sample (AN0107)")
+
+sub_tree = tree_subset(full_tree, node = "SRR12584072", levels_back = 4) #create subtree based on SRR12584072 seal fecal sample (AN0107)
+ggtree(sub_tree) %<+% full_data + 
+  geom_tiplab(aes(label = wgs_mlst)) + 
+  geom_tippoint(aes(color = specimen_source)) +
+  geom_treescale() +
+  theme(legend.position = "bottom", 
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10)) +
+  ggtitle("Phylogenetic Tree Subsetted to Evergreen Rotary Park Seal Fecal Sample (AN0107)")
+
+sub_tree = tree_subset(full_tree, node = "SRR12584072", levels_back = 4) #create subtree based on SRR12584072 seal fecal sample (AN0107)
+ggtree(sub_tree) %<+% full_data + 
+  geom_tiplab(aes(label = srr_id)) + 
+  geom_tippoint(aes(color = specimen_source)) +
+  geom_treescale() +
+  theme(legend.position = "bottom", 
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10)) +
+  ggtitle("Phylogenetic Tree Subsetted to Evergreen Rotary Park Seal Fecal Sample (AN0107)")
+```
+
+
+# ST10 and ST 131 trees
+```{r}
 # ST10 phylogenetic tree
 st10_phylotree = ggtree(st10_tree, size = 0.5)
 st10_phylotree %<+% st10_data + 
@@ -105,7 +171,7 @@ st10_phylotree %<+% st10_data +
   theme(legend.position = "bottom", 
         legend.title = element_text(size = 18),
         legend.text = element_text(size = 15)) +
-  ggtitle("ST10 Phylogenetic Tree") 
+  ggtitle("ST10 Phylogenetic Tree")
   
 
 # ST131 phylogenetic tree
@@ -123,294 +189,5 @@ st131_phylotree %<+% st131_data +
 #p = ggtree(tree) + geom_tiplab()
 #viewClade(p, MRCA(p, tip = c("SRR10948144", "SRR10948217", "SRR11059190", "SRR11068080", "SRR11091347", "SRR11091350", "SRR11091351", "SRR11113566", "SRR11116097", "SRR11536635", "SRR11618038", "SRR11960632", "SRR12777351")))
 ```
-
-
-## Download external and command line packages
-Follow the instructions to download and install:
-
-* [MAFFT](https://mafft.cbrc.jp/alignment/software/)
-* Download [IQTREE](http://www.iqtree.org/) and save within the "Phylo" folder.
-
-## Load data
-load a fasta file:
-```{r}
-fastafile = read.fasta(file = paste0( path, "variants.fasta"))
-class(fastafile)
-```
-
-load meta data: 
-```{r}
-metadata = read.csv(file = paste0( path, "metadata.csv"))
-class(metadata)
-```
-
-
-
-# Alignments
-## MAFFT: is the most updated sequence alignment program; very efficient
-
-We will use MAFFT (FFT-NS-2) to align these sequences. MAFFT is efficient for very very large alignments. Read more about MAFFT here: https://mafft.cbrc.jp/alignment/software/
-
-There are two ways you can run this algorithm. First, you can run this command line using the following code: 
-
-**For Mac:**
-```
-cd "/Users/ashleytseng/OneDrive - UW/UW PhD/Jobs/Phylogenetics/Lab Group/Diana Phylogenetics Exercise_12.02.2020/phylogenetics_example/Phylo/"
-mafft --thread -1 --nomemsave sequences.fasta > alignment.fasta
-```
-# "thread -1" tells the program to use as many cores as possible to run
-# "nomemsave" tells the program not to save to memory
-# "alignment.fasta" tells the program what we want to name the output
-
-**For Windows**
-```
-cd /d \Users\dianatordoff/Desktop\Phylo\
-mafft --thread -1 --nomemsave sequences.fasta > alignment.fasta
-```
-
-Or you can run it in R using the following code:
-```{r}
-system("mafft --thread -1 --nomemsave sequences.fasta > MAFFTalignment.fasta")
-```
-
-## Load and View Alignments
-Now we load the alignment:
-```{r}
-#as a list
-alignment <- read.fasta(file = paste0( path, "MAFFTalignment.fasta"))
-class(alignment)
-
-#as a DNA string set
-dna <- readAAStringSet(paste0( path, "MAFFTalignment.fasta"))
-class(dna)
-```
-
-And view them...
-
-View first sequence:
-```{r}
-alignment[1]
-```
-
-View alignment object using ``ggmsa`` (see [vignette for details](https://cran.r-project.org/web/packages/ggmsa/vignettes/ggmsa.html) ):
-```{r}
-#start of alignemnt
-ggmsa(dna[1:50], start=0, end=100)
-
-#end of alignment
-l=length(dna$seq1)
-ggmsa(dna[1:50], start=l-250, end=l)
-ggmsa(dna[1:50], start=l-500, end=l-250)
-
-#view full alignment (takes several minutes):
-#ggmsa(dna, font = NULL)
-```
-
-
-**NOTE:** the ``msa`` package has options to align sequences using Clustal and MUSCLE. See more information [here](https://bioconductor.org/packages/release/bioc/vignettes/msa/inst/doc/msa.pdf)
-
-
-
-# Editing fasta files
-## Trimming
-
-Examine sequence lengths:
-```{r}
-length <- getLength(fastafile)
-hist(length, type="density")
-summary(length) 
-```
-
-Based on the above view of the alignment, we will trim the leading 10 and trailing 400 bp from the alignment. 
-```{r}
-l=length(dna$seq1)
-trimmed <- alignment  
-for (i in 1:500) {
-  trimmed[[i]] <- trimmed[[i]][10:(l-400)]
-}
-length(trimmed$seq1)
-```
-
-Save trimmed alignment:
-```{r}
-write.fasta(trimmed, names=names(trimmed), file.out=paste0( path, "trimmed_alignment.fasta"))
-```
-
-## Creating sequence subsets
-
-Suppose we want a subset of sequences from MSM/IDU only:
-```{r}
-table(metadata$transm)
-
-# I want to keep all sequence names of the seqeunces that are of transmission category "MSM/IDU" in the metadata
-keepnames = metadata[metadata$transm == "MSM/IDU",]$seqID
-trimmed.MSMIDUonly <- trimmed[ c(which( names(trimmed) %in% keepnames )) ]
-# We can also do the above in one set
-trimmed.MSMIDUonly <- trimmed[ c(which( names(trimmed) %in% metadata[metadata$transm=="MSM/IDU",]$seqID )) ]
-
-write.fasta(trimmed.MSMIDUonly, names=names(trimmed.MSMIDUonly), file.out=paste0( path, "trimmed.MSMIDUonly_alignment.fasta"))
-```
-
-
-
-
-
-# Reconstructing Phylogeny
-
-## Neighbor Joining: clustering method for a pairwise distance matrix; "upgma" is an alternative clustering method
-
-Here is a simple example of a neighbor joining tree of the MSM/IDU subset:
-
-need to load as a dnabin object:
-```{r}
-dna.MSMIDU <- read.dna(file = paste0( path, "trimmed.MSMIDUonly_alignment.fasta"), format="fasta")
-class(dna.MSMIDU)
-```
-
-```{r}
-tree.MSMIDU <- njs(dist.dna(dna.MSMIDU))
-plot(tree.MSMIDU)
-```
-
-
-## IQTREE
-
-IQTREE is very efficient for large datasets. You do need to specify your own substitution model, however. IQTREE is a maximum likelihood estimation.
-
-Go [here](http://www.iqtree.org/doc/Substitution-Models#dna-models) and [here](http://www.iqtree.org/doc/Substitution-Models#rate-heterogeneity-across-sites) to learn more about substitution models. All of these are ways to adjust branch lengths to account for saturation (the number of multiple hits over time that can obscure differences).
-
-Rate heterogeneity is trying to account for the fact that some sites in a gene evolves a lot more quickly than other sites. Uses likelihood/probabilities of change to account for some sites where there are a lot of observed differences and not so much for other sites. You're not telling the algorithm which sites you're expecting a lot of differences in (does not assume prior knowledge).
-
-**For Mac:**
-```
-cd "/Users/ashleytseng/OneDrive - UW/UW PhD/Jobs/Phylogenetics/Lab Group/Diana Phylogenetics Exercise_12.02.2020/phylogenetics_example/Phylo/"
-iqtree-1.6.12-MacOSX/bin/iqtree -s trimmed_alignment.fasta -m HKY+G4+I+R -nt 2
-```
-"iqtree -s" indicates the sequences you're using
-"-m" specifies the substitution model you're using 
-"-nt" specifies the number of threads you're using 
-
-There's three phases IQTREE goes through:
-1. Reads in the alignment
-2. Initializing candidate tree set
-3. Optimizing candidate tree set
-
-IQTREE saves a bunch of files, but these are the 2 important ones:
-1. "trimmed_alignment.fasta.log" saves everything in the terminal; lets you look back at the code
-2. "trimmed_alignment.fasta.treefile": is your actual tree
-
-**For Windows**
-```
-cd /d \Users\dianatordoff\Desktop\Phylo\
-iqtree-1.6.12-Windows\bin\iqtree -s trimmed_alignment.fasta -m HKY+G4+I+R -nt 2
-```
-
-*NOTE: -nt 2 indicates the number of threads, or cores, for parallel computing. Most laptops have 2, but you can increase this if you have additional processors*
-
-Or you can run it in R using the following code:
-```{r}
-system("iqtree-1.6.12-MacOSX/bin/iqtree -s trimmed_alignment.fasta -m HKY+G4+I+R -nt 2")
-```
-
-
-
-
-
-
-# Plotting Trees
-
-Load tree:
-```{r}
-setwd("/Users/ashleytseng/phylip-3.695/exe")
-tree = read.newick("outtree")
-ggtree(tree)
-ggtree(tree, layout="slanted") 
-ggtree(tree, layout="circular")
-ggtree(tree, layout="fan", open.angle=120)
-ggtree(tree, layout="equal_angle")
-ggtree(tree, branch.length='none')
-ggtree(tree, branch.length='none', layout='circular')
-```
-
-## root tree
-
-```{r}
-tree = root(tree, "Reference") 
-is.rooted(tree)
-```
-
-## extract a subclade
-
-```{r}
-tree$Nnode
-subtree = extract.clade(tree, 3)
-Ntip(subtree)
-```
-
-## ggtree
-
-This is a great reference guide for using [ggtree](https://guangchuangyu.github.io/ggtree-book/chapter-ggtree.html#introduction-1).
-
-There are several ways to plot a tree:
-```{r}
-ggtree(subtree)
-ggtree(subtree, layout="slanted") 
-ggtree(subtree, layout="circular")
-ggtree(subtree, layout="fan", open.angle=120)
-ggtree(subtree, layout="equal_angle")
-ggtree(subtree, branch.length='none')
-ggtree(subtree, branch.length='none', layout='circular')
-```
-
-You can also attach metadata (this is one of several ways to attach metadata):
-```{r}
-df <- tibble(seqID = tree$tip.label)
-df <- merge(df, metadata, by="seqID", all.x=TRUE)
-
-p <- ggtree(tree, branch.length='none', layout='circular')
-p %<+% df + geom_tippoint(aes(color = transm))
-
-q <- ggtree(tree)
-q %<+% df + geom_tippoint(aes(color = age)) + 
-  scale_colour_gradient2(low="orange", mid="white", high="blue", midpoint=35)
-```
-
-
-# Genetic Distances & Clusters
-
-Here we use a simplification of Art Poon's patristic distance method R function from "ape" package.
-```{r}
-#define function (uses igraph and network graphing)
-cluster_by_patristic_distance <- function(tree, min_size = 2, threshold = 0.02) {
-    patristic.dist <- ape::cophenetic.phylo(tree)
-    adj_mat        <- patristic.dist <= threshold
-    cluster_graph  <- igraph::graph_from_adjacency_matrix(adj_mat, mode="undirected", diag=FALSE)
-    components     <- igraph::components(cluster_graph)
-    retain_assignments <- purrr::keep(components$membership, ~ components$csize[.x] >= min_size)
-    clusters           <- tibble(sequence_name = names(retain_assignments), cluster = retain_assignments)
-  return(clusters)
-}
-
-patristic.02.sarscov2 <- cluster_by_patristic_distance(tree, min_size = 2, threshold = 0.02)
-```
-
-Here we use Tamura-Nei (TN93) pairwise distance, which is equivalent to HIV-TRACE. R function from "ape" package. 
-```{r}
-dna <- read.dna(file = paste0( path, "trimmed_alignment.fasta"), format="fasta")
-class(dna) #needs to be a DNAbin object
-
-cluster_by_TN93 <- function(tree, min_size = 2, threshold = 0.02) {
-    TN93.dist     <- ape::dist.dna(dna, model="TN93", pairwise.deletion = TRUE, as.matrix=TRUE)
-    adj_mat       <- TN93.dist <= threshold
-    cluster_graph <- igraph::graph_from_adjacency_matrix(adj_mat, mode="undirected", diag=FALSE)
-    components    <- igraph::components(cluster_graph)
-    retain_assignments <- purrr::keep(components$membership, ~ components$csize[.x] >= min_size)
-    clusters           <- tibble::tibble(sequence_name = names(retain_assignments), cluster = retain_assignments)
-  return(clusters)
-}
-
-tn93.02.hiv <- cluster_by_TN93(dna, min_size = 2, threshold = 0.02)
-```
-
 
 
